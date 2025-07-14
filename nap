@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Hàng - Xăng và Dầu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/number-to-locale-string/1.0.2/number-to-locale-string.min.js"></script>
+    <style>
+        /* Đặt các kiểu chung cho toàn bộ trang */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #16a085;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: #ecf0f1;
+            outline: none;
+            color: #2c3e50;
+        }
+
+        input:focus {
+            border-color: #1abc9c;
+            background-color: #ffffff;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        .result span {
+            color: #e74c3c;
+        }
+
+        /* Media query để tối ưu cho thiết bị di động */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.4em;
+            }
+
+            h2 {
+                font-size: 1em;
+            }
+
+            input, button {
+                font-size: 1em;
+            }
+
+            .result {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>NHẬP HÀNG (Xăng và Dầu)</h1>
+
+        <!-- Phần Xăng -->
+        <div>
+            <h2>XĂNG</h2>
+            <label for="xang-gia-ban-le">Giá bán lẻ vùng 1 Xăng:</label>
+            <input type="text" id="xang-gia-ban-le" placeholder="Nhập giá bán lẻ vùng 1" />
+
+            <label for="xang-chiet-khau">Chiết khấu Xăng:</label>
+            <input type="text" id="xang-chiet-khau" placeholder="Nhập chiết khấu" />
+
+            <label for="xang-so-luong">Số lượng (Khối) Xăng:</label>
+            <input type="text" id="xang-so-luong" placeholder="Nhập số lượng" />
+        </div>
+
+        <!-- Phần Dầu -->
+        <div>
+            <h2>DẦU</h2>
+            <label for="dau-gia-ban-le">Giá bán lẻ vùng 1 Dầu:</label>
+            <input type="text" id="dau-gia-ban-le" placeholder="Nhập giá bán lẻ vùng 1" />
+
+            <label for="dau-chiet-khau">Chiết khấu Dầu:</label>
+            <input type="text" id="dau-chiet-khau" placeholder="Nhập chiết khấu" />
+
+            <label for="dau-so-luong">Số lượng (Khối) Dầu:</label>
+            <input type="text" id="dau-so-luong" placeholder="Nhập số lượng" />
+        </div>
+
+        <!-- Nút tính toán -->
+        <button id="calculate-btn">Tính Thành Tiền</button>
+
+        <!-- Kết quả -->
+        <div class="result" id="result-section">
+            <p>Số lượng XĂNG Nhập: <span id="result-xang">0</span> (Giá nhập = <span id="result-xang-gia"></span>)</p>
+            <p>Số lượng DẦU Nhập: <span id="result-dau">0</span> (Giá nhập = <span id="result-dau-gia"></span>)</p>
+            <p>Thành Tiền Nhập Hàng: <span id="result-tong">0 VND</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Hàm định dạng số theo dạng VND
+        const formatNumber = (num) => {
+            return num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        };
+
+        // Hàm xử lý nhập liệu có dấu phân cách nghìn
+        const formatInput = (input) => {
+            let value = input.value.replace(/[^0-9]/g, "");  // Xóa tất cả ký tự không phải là số
+            if(value !== "") {
+                input.value = Number(value).toLocaleString(); // Định dạng lại với dấu phân cách nghìn
+            } else {
+                input.value = ""; // Nếu không có giá trị, giữ trống
+            }
+        };
+
+        // Lắng nghe sự kiện "input" để định dạng lại giá trị trong các ô input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function () {
+                formatInput(this);
+            });
+        });
+
+        // Hàm tính thành tiền nhập hàng
+        document.getElementById('calculate-btn').addEventListener('click', function() {
+            // Lấy dữ liệu người dùng nhập vào cho Xăng
+            const xangGiaBanLe = parseFloat(document.getElementById('xang-gia-ban-le').value.replace(/[^0-9]/g, "")) || 0;
+            const xangChietKhau = parseFloat(document.getElementById('xang-chiet-khau').value.replace(/[^0-9]/g, "")) || 0;
+            const xangSoLuong = parseFloat(document.getElementById('xang-so-luong').value.replace(/[^0-9]/g, "")) || 0;
+
+            // Lấy dữ liệu người dùng nhập vào cho Dầu
+            const dauGiaBanLe = parseFloat(document.getElementById('dau-gia-ban-le').value.replace(/[^0-9]/g, "")) || 0;
+            const dauChietKhau = parseFloat(document.getElementById('dau-chiet-khau').value.replace(/[^0-9]/g, "")) || 0;
+            const dauSoLuong = parseFloat(document.getElementById('dau-so-luong').value.replace(/[^0-9]/g, "")) || 0;
+
+            // Tính số lượng nhập Xăng và Dầu
+            const soLuongXangNhap = xangSoLuong * 1000;
+            const soLuongDauNhap = dauSoLuong * 1000;
+
+            // Tính giá nhập cho Xăng và Dầu
+            const giaNhapXang = xangGiaBanLe - xangChietKhau;
+            const giaNhapDau = dauGiaBanLe - dauChietKhau;
+
+            // Tính thành tiền nhập hàng cho Xăng
+            const thanhTienXang = giaNhapXang * xangSoLuong * 1000;
+
+            // Tính thành tiền nhập hàng cho Dầu
+            const thanhTienDau = giaNhapDau * dauSoLuong * 1000;
+
+            // Tính tổng thành tiền nhập hàng
+            const thanhTienTong = thanhTienXang + thanhTienDau;
+
+            // Hiển thị kết quả
+            document.getElementById('result-xang').innerText = soLuongXangNhap.toLocaleString();
+            document.getElementById('result-dau').innerText = soLuongDauNhap.toLocaleString();
+
+            // Hiển thị thêm giá nhập cho Xăng và Dầu
+            document.getElementById('result-xang-gia').innerText = formatNumber(giaNhapXang);
+            document.getElementById('result-dau-gia').innerText = formatNumber(giaNhapDau);
+
+            // Hiển thị thành tiền tổng
+            document.getElementById('result-tong').innerText = formatNumber(thanhTienTong);
+        });
+    </script>
+
+</body>
+</html>
